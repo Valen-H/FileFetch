@@ -3,7 +3,7 @@ This module was built for heroku but can run on every machine.
 It was originally made to export previous heroku app files before re-deploying to avoid overriding.  
   
 ## How it works  
-This module launcher a server on app and a keepalive client on local,  
+This module launches a server on app and a keepalive client on local,  
 every time some change occurs on server-side you simply call `global.connect.write("Reload.")` to instruct the server to send the new data back to the client.  
   
 ### Usage
@@ -25,8 +25,10 @@ silence : silence extraction-specific logging.
   
 ***
   
-`npm start` -> `node heroku.js client --no-deprecation`  
-`npm run server` -> `node heroku.js server --no-deprecation`  
-`npm run both` -> `node heroku.js both --no-deprecation`  
+`npm start` -> `node fetch.js client --no-deprecation`  
+`npm run server` -> `node fetch.js server --no-deprecation`  
+`npm run both` -> `node fetch.js both --no-deprecation`  
+`npm test` -> `npm install -g` (`run` binary)  
+`run` -> `node fetch.js`  
   
 `type=client from=... to=... node index.js --no-deprecation`  
