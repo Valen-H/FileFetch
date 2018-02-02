@@ -4,15 +4,15 @@
   "description": "A file fetching tool built for heroku.",
   "main": "index.js",
   "scripts": {
-    "start": "node heroku.js client --no-deprecation",
+    "start": "node fetch.js client --no-deprecation",
     "client": "npm start",
-    "server": "node heroku.js server --no-deprecation",
-    "both": "node heroku.js both --no-deprecation",
+    "server": "node fetch.js server --no-deprecation",
+    "both": "node fetch.js both --no-deprecation",
     "prepare": "npm install -g",
     "test": "npm install -g"
   },
   "bin": {
-    "run": "./heroku.js"
+    "run": "./fetch.js"
   },
   "keywords": [
     "heroku",
