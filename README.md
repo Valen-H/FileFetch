@@ -25,10 +25,10 @@ silence : silence extraction-specific logging.
   
 ***
   
-`npm start` -> `node fetch.js client --no-deprecation`  
+`npm start` -> `npm run client` -> `node fetch.js client --no-deprecation`  
 `npm run server` -> `node fetch.js server --no-deprecation`  
 `npm run both` -> `node fetch.js both --no-deprecation`  
 `npm test` -> `npm install -g` (`run` binary)  
 `run` -> `node fetch.js`  
   
-`type=client from=... to=... node index.js --no-deprecation`  
+`type=client from=... to=... ... node index.js --no-deprecation`  
