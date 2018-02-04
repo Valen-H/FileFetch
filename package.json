@@ -1,6 +1,6 @@
 {
   "name": "filefetch",
-  "version": "2.2.0",
+  "version": "2.3.1",
   "description": "A file fetching tool built for heroku.",
   "main": "index.js",
   "scripts": {
@@ -24,9 +24,13 @@
     "fs-extra": "^5.0.0"
   },
   "optionalDependencies": {
-    "nodemodule": "file:./nodemodule"
+    "nodemodule": "file:./nodemodule",
+    "socket.io": "^2.0.4",
+    "socket.io-client": "^2.0.4"
   },
-  "bundledDependencies": ["nodemodule"],
+  "bundledDependencies": [
+    "nodemodule"
+  ],
   "devDependencies": {},
   "repository": {
     "type": "git",
@@ -36,7 +40,7 @@
     "url": "https://github.com/ValentinHacker/FileFetch/issues"
   },
   "engines": {
-  	 "node": ">=8.0.0"
+    "node": ">=8.0.0"
   },
   "homepage": "https://github.com/ValentinHacker/FileFetch#readme"
 }
