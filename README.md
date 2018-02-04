@@ -4,10 +4,7 @@ It was originally made to export previous heroku app files before re-deploying t
   
 ### How it works  
 This module launches a server on app and a keepalive client on local,  
-every time some change occurs on server-side you simply call ```javascript  
-client.reload()  
-```
- to instruct the server to send the new data back to the client.  
+every time some change occurs on server-side you simply call `client.reload()` to instruct the server to send the new data back to the client.  
   
 # Usage
 import on app,  
@@ -41,14 +38,8 @@ You can also pass environmental values:
   
 If called as `both` inside a script return type will be a `{client, server}` object while calling it as `client|server` will only return the specified part.  
   
-```javascript  
-client.connect.load([to, from])  
-```
- <- loads files from client to server.  
-```javascript  
-(client|server).connect.reload()  
-```
- <- fetches data from server to client.  
+`client.connect.load([to, from])` <- loads files from client to server.  
+`(client|server).connect.reload()` <- fetches data from server to client.  
   
 Running on terminal will enable commanding through repl-like readline system.  
 *stop/exit* <- quits session  
