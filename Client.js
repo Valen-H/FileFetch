@@ -41,24 +41,29 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 		conn.load = load;
 		conn.reload = dt => conn.emit("data", dt);
 		conn.on("data", chunk => {
-			fs.emptyDirSync(to);
-			conn.emit("started");
-			folder(from, to).then(() => {
-				console.info("Export Finished.");
-				conn.emit("finished");
-			}).catch(err => {
-				console.warn(err);
-				return false;
-			});
-			console.info(`files of ${of}/${from} are being extracted to ${to}`);
+			if (/reload/i.test(chunk)) {
+				fs.emptyDirSync(to);
+				conn.emit("started");
+				folder(from, to).then(() => {
+					console.info("Export Finished.");
+					conn.emit("finished");
+				}).catch(err => {
+					console.warn(err);
+					return false;
+				});
+				console.info(`files of ${of}/${from} are being extracted to ${to}`);
+			} else if (/load/i.test(chunk)) {
+				conn.load();
+			}
 		});
+		clt.connect.emit("connected", conn);
 		clt.emit("connected", conn);
 	});
 	async function folder(path, to) {
 		return new Promise((rsl, rjc) => {
 			http.get({ host: url.parse(of).hostname, port: url.parse(of).port, path: `/command?pass=${pass}&command=fs.readdirSync('${path}')` }, res => {
 				var files = "";
-				res.on("data", data => files += data)
+				res.on("data", data => files += data);
 				res.on("end", () => {
 					if (res.statusCode !== 403) {
 						try {

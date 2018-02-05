@@ -7,9 +7,9 @@ rl.on("line", line => {
 		return
 	} else if (/^reload$/i.test(line)) {
 		if (socket.server) {
-			socket.server.connect.write("Reload.\n");
+			socket.server.connect[0].write("Reload");
 		} else {
-			socket.connect.write("Reload.\n");
+			socket.connect[0].write("Reload");
 		}
 		line = "'Re-Exporting...'"
 	} else if (/^load$/i.test(line)) {

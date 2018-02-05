@@ -17,11 +17,11 @@ Servers use : pass, port
 Clients use : pass, from, of, to, ignores, silence  
 **pass** : the pass provided by client must match server-sided pass with is 'herokujspass' by default  
 **port** : the port that listens to this module, must hold a unique server  
-**of** : the address of the server, `http://appname.herokuapp.com:port/`  
-**from** : the path of extraction, `./` (server)  
-**to** : the path of output, `out/` (client)  
-**ignores** : the files that should be omitted, `['./out','./node_modules','./.heroku']`  
-**silence** : silence extraction-specific logging.  
+**of** : the address of the server, eg : `http://appname.herokuapp.com:port/`, defaults to : `http://127.0.0.1:8080/`  
+**from** : the path of extraction (serverside), default : `./`  
+**to** : the path of output (clientside), default : `out/`  
+**ignores** : the files that should be omitted, defaults : `['./out','./node_modules','./.heroku']`  
+**silence** : silence extraction-specific logging. Defaults to `false`  
   
 ***
   
@@ -38,8 +38,11 @@ You can also pass environmental values:
   
 If called as `both` inside a script return type will be a `{client, server}` object while calling it as `client|server` will only return the specified part.  
   
-`client.connect.load([to, from])` <- loads files from client to server.  
-`(client|server).connect.reload()` <- fetches data from server to client.  
+* (a|b) <- `a` or `b`  
+* [a] <- optional  
+  
+`(client|server)[.connect].load([to, from])` <- loads files from client to server.  
+`(client|server)[.connect].reload()` <- fetches data from server to client.  
   
 Running on terminal will enable commanding through repl-like readline system.  
 *stop/exit* <- quits session  
@@ -50,4 +53,4 @@ Running on terminal will enable commanding through repl-like readline system.
   
 ***  
   
-> note, when a filefetch connection is established both client and server broadcast the 'connected' event on themselves!
+> note, when a filefetch connection is established both client and server broadcasts the 'connected' event on themselves and their respective socket(s)!

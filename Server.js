@@ -15,10 +15,12 @@ module.exports = function server({ port = process.env.port || process.env.npm_pa
 			if (!/^\/?(command|socket|close|ping|store)$/i.test(q.pathname)) {
 				res.write("<h1>SUCCESS</h1>");
 			} else if (q.pathname == "/socket") {
-				res.write("Connected\n");
-				console.info(`${req.socket.remoteAddress} Listening.`)
-				res.reload = dt => res.write(dt || "Reload.\n");
-				srv.connect = res;
+				res.write("reload");
+				console.info(`${req.socket.remoteAddress} Listening.`);
+				res.reload = dt => res.write(dt || "Reload");
+				res.load = dt => res.write("Load");
+				srv.connect.push(res);
+				res.emit("connected");
 				srv.emit("connected", res);
 				return true;
 			} else if (q.pathname == "/close") {
@@ -33,7 +35,8 @@ module.exports = function server({ port = process.env.port || process.env.npm_pa
 			} else if (q.pathname == "/store") {
 				fs.ensureFileSync(q.query.path);
 				req.pipe(fs.createWriteStream(q.query.path || "store.txt"));
-				res.write("Loaded.");
+				res.write("Loaded");
+				srv.emit("loaded");
 				console.info(`${q.query.path} Loaded.`);
 			}
 		} else {
@@ -44,6 +47,7 @@ module.exports = function server({ port = process.env.port || process.env.npm_pa
 	})).listen(port, () => {
 		console.info(`Server bound to port ${port}`);
 	});
+	srv.connect = [];
 	if (ping) {
 		setInterval(() => {
 			http.get({ host: "127.0.0.1", port: port, path: "/ping" }, ignore => { });

@@ -1,6 +1,6 @@
 {
   "name": "filefetch",
-  "version": "3.1.0",
+  "version": "3.2.1",
   "description": "A file fetching tool built for heroku.",
   "main": "index.js",
   "scripts": {
