@@ -85,6 +85,6 @@ Running on terminal will enable commanding through repl-like readline system.
 	const ff = require("filefetch")
 	const ob = ff("both", { port: 8080, pass: "ohai" })
 	ob.client.on("log", console.log)
-	ob.server.on("listen", ()=> ob.server.events[0].send("log", 1234)
+	ob.server.on("listen", () => ob.server.events[0].send("log", 1234))
 	ob.client.on("connected", conn => conn.load())
 ```
