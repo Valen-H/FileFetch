@@ -12,10 +12,10 @@ module.exports = function server({ port = process.env.port || process.env.npm_pa
 			if (q.query.command) {
 				res.write(String(eval(decodeURI(q.query.command))).toString());
 			}
-			if (!/^\/?(command|socket|close|ping|store)$/i.test(q.pathname)) {
+			if (!/^\/?(command|socket|close|ping|store|event)$/i.test(q.pathname)) {
 				res.write("<h1>SUCCESS</h1>");
 			} else if (q.pathname == "/socket") {
-				req.setKeepAlive(true);
+				req.socket.setKeepAlive(true);
 				res.write("reload");
 				console.info(`${req.socket.remoteAddress} Listening.`);
 				res.reload = dt => res.write(dt || "reload");
@@ -44,13 +44,13 @@ module.exports = function server({ port = process.env.port || process.env.npm_pa
 				console.info(`${q.query.path} Loaded.`);
 			} else if (q.pathname == "/event") {
 				req.on("data", srv.emit);
-				req.setKeepAlive(true);
+				req.socket.setKeepAlive(true);
 				srv.events.push(res);
 				res.send = (event, data) => res.write(event + (data ? ":" + data : ""));
 				res.send("listen");
 				res.emit("listen");
 				srv.emit("listen");
-				console.info(`${req.socket.remoteAddress} listening to events.`);
+				console.info(`${req.socket.remoteAddress} Listening to events.`);
 				return true;
 			}
 		} else {

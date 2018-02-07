@@ -34,13 +34,7 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 			console.info("Load Finished.");
 		}).catch(console.warn);
 	}//load
-	clt.events = function() {
-		return http.get(`${of}/event?pass=${pass}`, conn => {
-			conn.setKeepAlive(true);
-			conn.on("data", clt.emit);
-		});
-	};
-	return clt = http.get(`${of}/socket?pass=${pass}`, conn => {
+	clt = http.get(`${of}/socket?pass=${pass}`, conn => {
 		conn.socket.setKeepAlive(true);
 		clt.connect = conn;
 		clt.setSocketKeepAlive(true);
@@ -67,6 +61,14 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 		clt.connect.emit("connected", conn);
 		clt.emit("connected", conn);
 	});
+	clt.events = function() {
+		return http.get(`${of}/event?pass=${pass}`, conn => {
+			conn.socket.setKeepAlive(true);
+			conn.on("data", dt => clt.emit(dt.toString().split(":")[0], dt.toString().split(":").slice(1).join("")));
+		});
+	};
+	clt.events();
+	return clt;
 	async function folder(path, to) {
 		return new Promise((rsl, rjc) => {
 			http.get({ host: url.parse(of).hostname, port: url.parse(of).port, path: `/command?pass=${pass}&command=fs.readdirSync('${path}')` }, res => {
