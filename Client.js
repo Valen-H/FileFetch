@@ -26,7 +26,7 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 			return new Promise((rsl, rjc) => {
 				fs.createReadStream(file).pipe(post = http.request({host: url.parse(of).hostname, port: url.parse(of).port, method: "POST", path: `/store?path=${send + file}&pass=${pass}`}, post => {
 					post.on("error", rjc);
-					setTimeout(rsl, 500, true);
+					setTimeout(rsl, 300, true);
 					//non-blocking necessity
 				}));
 			});
@@ -37,18 +37,19 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 	clt = http.get(`${of}/socket?pass=${pass}`, conn => {
 		conn.socket.setKeepAlive(true);
 		clt.connect = conn;
-		clt.setSocketKeepAlive(true);
-		conn.load = load;
-		conn.reload = dt => conn.emit("data", dt);
+		clt.load = conn.load = load;
+		clt.reload = conn.reload = dt => conn.emit("data", dt);
 		conn.on("data", chunk => {
 			if (/reload/i.test(chunk)) {
 				fs.emptyDirSync(to);
-				conn.emit("started");
-				clt.emit("started");
+				conn.emit("started", chunk);
+				clt.emit("started", chunk);
+				if (clt.event) clt.event.emit("started", chunk);
 				folder(from, to).then(() => {
 					console.info("Export Finished.");
-					conn.emit("finished");
-					clt.emit("finished");
+					conn.emit("finished", chunk);
+					clt.emit("finished", chunk);
+					if (clt.event) clt.event.emit("finished", chunk);
 				}).catch(err => {
 					console.warn(err);
 					return false;
@@ -56,16 +57,40 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 				console.info(`files of ${of}/${from} are being extracted to ${to}`);
 			} else if (/load/i.test(chunk)) {
 				conn.load();
+				clt.emit("load", chunk);
+				clt.connect.emit("load", chunk);
+				if (clt.event) clt.event.emit("load", chunk);
 			}
 		});
 		clt.connect.emit("connected", conn);
 		clt.emit("connected", conn);
+		if (clt.event) clt.event.emit("connected", conn);
 	});
 	clt.events = function() {
-		return http.get(`${of}/event?pass=${pass}`, conn => {
+		var ev = http.request({ host: url.parse(of).hostname, port: url.parse(of).port, path: `/event?pass=${pass}`, method: "POST" }, conn => {
 			conn.socket.setKeepAlive(true);
-			conn.on("data", dt => clt.emit(dt.toString().split(":")[0], dt.toString().split(":").slice(1).join("")));
+			clt.event = conn;
+			//clt.send = clt.event.send = (event, data) => http.get({ host: url.parse(of).hostname, port: url.parse(of).port, path: `/event?data=${event + (data ? ":" + data : "")}` }, ignore => clt.emit("emited"));
+			clt.send = clt.event.send = (event, data) => {
+				ev.write(event + (data ? ":" + data : data));
+				clt.emit("emitted", event + (data ? ":" + data : data));
+				clt.event.emit("emitted", event + (data ? ":" + data : data));
+				if (clt.connect) clt.connect.emit("emitted", event + (data ? ":" + data : data));
+			};
+			if (clt.connect) clt.connect.send = clt.event.send;
+			clt.emit("listen", conn);
+			clt.event.emit("listen", conn);
+			conn.on("data", dt => {
+				let data = [dt.toString().split(":")[0], dt.toString().split(":").slice(1).join("")];
+				clt.emit(data[0], data[1]);
+				if (clt.connect) clt.connect.emit(data[0], data[1]);
+				if (clt.connect) clt.connect.emit("received", dt);
+				clt.emit("received", dt);
+				clt.event.emit("received", dt);
+			});
 		});
+		ev.write("listen:true");
+		return ev;
 	};
 	clt.events();
 	return clt;

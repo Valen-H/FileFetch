@@ -1,6 +1,6 @@
 {
   "name": "filefetch",
-  "version": "3.2.1",
+  "version": "3.4.2",
   "description": "A file fetching tool built for heroku.",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "server": "node fetch.js server --no-deprecation",
     "both": "node fetch.js both --no-deprecation",
     "prepare": "npm test",
-    "test": "npm install -g"
+    "test": "npm install -g && run"
   },
   "bin": {
     "run": "./fetch.js"

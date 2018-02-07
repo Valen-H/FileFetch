@@ -16,7 +16,7 @@ module.exports = function server({ port = process.env.port || process.env.npm_pa
 				res.write("<h1>SUCCESS</h1>");
 			} else if (q.pathname == "/socket") {
 				req.socket.setKeepAlive(true);
-				res.write("reload");
+				res.write("started");
 				console.info(`${req.socket.remoteAddress} Listening.`);
 				res.reload = dt => res.write(dt || "reload");
 				res.load = dt => res.write("load");
@@ -43,11 +43,27 @@ module.exports = function server({ port = process.env.port || process.env.npm_pa
 				srv.emit("loaded");
 				console.info(`${q.query.path} Loaded.`);
 			} else if (q.pathname == "/event") {
-				req.on("data", srv.emit);
+				/*if (q.query.data) {
+					let data = [q.query.data.toString().split(":")[0], q.query.data.toString().split(":").slice(1).join("")];
+					srv.emit(data[0], data[1]);
+					srv.emit("received", q.query.data);
+					return true;
+				}*/
 				req.socket.setKeepAlive(true);
 				srv.events.push(res);
-				res.send = (event, data) => res.write(event + (data ? ":" + data : ""));
-				res.send("listen");
+				req.on("data", dt => {
+					let data = [dt.toString().split(":")[0], dt.toString().split(":").slice(1).join("")];
+					srv.emit(data[0], data[1]);
+					res.emit(data[0], data[1]);
+					srv.emit("received", dt);
+					res.emit("received", dt);
+				});
+				res.send = (event, data) => {
+					res.write(event + (data ? ":" + data : ""));
+					res.emit("emitted", event + (data ? ":" + data : data));
+					srv.emit("emitted", event + (data ? ":" + data : data));
+				};
+				res.send("listen", true);
 				res.emit("listen");
 				srv.emit("listen");
 				console.info(`${req.socket.remoteAddress} Listening to events.`);

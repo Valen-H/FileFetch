@@ -4,7 +4,8 @@ It was originally made to export previous heroku app files before re-deploying t
   
 ### How it works  
 This module launches a server on app and a keepalive client on local,  
-every time some change occurs on server-side you simply call `client.connect.reload()` to instruct the server to send the new data back to the client or `client.connect.load()` to send new data to server.  
+every time some change occurs on server-side you simply call `(client|server)[.connect].reload()` to instruct the server to send the new data back to the client or `(client|server)[.connect].load()` to send new data to server.  
+> note that `server.connect` is an array (like `server.events`) and reference to `connect` is optional only on clients.  
   
 # Usage
 import on app,  
@@ -51,6 +52,7 @@ Running on terminal will enable commanding through repl-like readline system.
 *reload* <- reloads  
 *load* <- loads  
 *restart* <- restarts all  
+*clean/clear* <- clean console  
 *socket* <- the `{client, server}` object (or `(client|server)`).  
   
 ***  
@@ -62,11 +64,27 @@ Running on terminal will enable commanding through repl-like readline system.
 * Client  
 	**started** <- socket issued `reload`  
 	**finished** <- socket finished `reload`  
+	**load** <- socket issued `load`  
 * Both  
-	**connected** <- socket connected, triggers on : `(load|reload)`, requests to `/socket`.  
+	**connected** <- socket connected, triggers on : `(load|reload)`, requests to `/socket`  
+	**received** <- socket received event  
+	**emitted** <- socket sent event  
+	**listen** <- request to `/event`  
 * Server  
 	**pinged** <- request to `/ping` which returns process.uptime()  
+	**closed** <- request to `/close`  
 	**loaded** <- `load` commanded, request to `/store?path=...`  
-	***listen*** <- request to `/event`  
+	
+> requests to `/event` create a keepAlive socket for events emission... the socket has a `send(event <String>, data <String>)` method which sends events to other side...  
   
-> requests to `/event` create a keepAlive socket for events emission... the socket has a `send(event <String>, data <String>)` method which sends events to other side...
+***  
+  
+* Samples  
+  
+```javascript
+	const ff = require("filefetch")
+	const ob = ff("both", { port: 8080, pass: "ohai" })
+	ob.client.on("log", console.log)
+	ob.server.on("listen", ()=> ob.server.events[0].send("log", 1234)
+	ob.client.on("connected", conn => conn.load())
+```

@@ -11,7 +11,7 @@ rl.on("line", line => {
 		} else {
 			socket.connect[0].write("Reload");
 		}
-		line = "'Re-Exporting...'"
+		line = "'Exporting...'"
 	} else if (/^load$/i.test(line)) {
 		line = "'Loading...'";
 		if (socket.client) {
@@ -28,6 +28,8 @@ rl.on("line", line => {
 		console.info("Server closed.");
 		socket = require("./")(process.argv[2] || "both");
 		line = "'Restarting...'";
+	} else if (/^clea[rn]$/i.test(line)) {
+		line = "'\\n'.repeat(50)";
 	}
 	process.stdout.write(eval(line) + "\n");
 	rl.prompt();
