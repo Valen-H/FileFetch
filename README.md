@@ -4,7 +4,7 @@ It was originally made to export previous heroku app files before re-deploying t
   
 ### How it works  
 This module launches a server on app and a keepalive client on local,  
-every time some change occurs on server-side you simply call `client.reload()` to instruct the server to send the new data back to the client.  
+every time some change occurs on server-side you simply call `client.connect.reload()` to instruct the server to send the new data back to the client or `client.connect.load()` to send new data to server.  
   
 # Usage
 import on app,  
@@ -69,4 +69,4 @@ Running on terminal will enable commanding through repl-like readline system.
 	**loaded** <- `load` commanded, request to `/store?path=...`  
 	***listen*** <- request to `/event`  
   
-> requests to `/event` create a keepAlive socket for events emission... the socket has a `send(event \<String>, data \<String>)` method which sends events to other side...
+> requests to `/event` create a keepAlive socket for events emission... the socket has a `send(event <String>, data <String>)` method which sends events to other side...
