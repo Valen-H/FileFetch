@@ -44,13 +44,29 @@ If called as `both` inside a script return type will be a `{client, server}` obj
 `(client|server)[.connect].load([to, from])` <- loads files from client to server.  
 `(client|server)[.connect].reload()` <- fetches data from server to client.  
   
+> note that `server.connect` is an array (like `server.events`)  
+  
 Running on terminal will enable commanding through repl-like readline system.  
 *stop/exit* <- quits session  
 *reload* <- reloads  
 *load* <- loads  
 *restart* <- restarts all  
-**socket** <- the `{client, server}` object.  
+*socket* <- the `{client, server}` object (or `(client|server)`).  
   
 ***  
   
-> note, when a filefetch connection is established both client and server broadcasts the 'connected' event on themselves and their respective socket(s)!
+#### Events  
+  
+> note, when an event is emitted both client and server broadcasts the event on themselves and their respective socket(s)!  
+  
+* Client  
+	**started** <- socket issued `reload`  
+	**finished** <- socket finished `reload`  
+* Both  
+	**connected** <- socket connected, triggers on : `(load|reload)`, requests to `/socket`.  
+* Server  
+	**pinged** <- request to `/ping` which returns process.uptime()  
+	**loaded** <- `load` commanded, request to `/store?path=...`  
+	***listen*** <- request to `/event`  
+  
+> requests to `/event` create a keepAlive socket for events emission... the socket has a `send(event \<String>, data \<String>)` method which sends events to other side...

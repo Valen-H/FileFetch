@@ -1,6 +1,6 @@
 const http = require("http"), fs = require("fs-extra"), url = require("url"), stream = require("stream");
 var client;
-module.exports = client = function client({ of, pass, from, to, silence, ignores } = { of: process.env.of || process.env.app || "http://127.0.0.1:8080", pass: process.env.pass || "herokujspass", from: process.env.from || "./", to: process.env.to || "out/", silence: process.env.silence, ignores: process.env.ignore || [ "./out", "./node_modules", "./.heroku" ] }) {
+module.exports = client = function client({ of, pass, from, to, silence, ignores } = { of: process.env.of || process.env.app || "http://127.0.0.1:8080", pass: process.env.pass || "herokujspass", from: process.env.from || "./", to: process.env.to || "out/", silence: process.env.silence, ignores: process.env.ignore || process.env.ignores || [ "./out", "./node_modules", "./.heroku" ] }) {
 	var clt, console = global.console;
 	//localize console
 	if (silence) console = new console.constructor(new stream.Writable(), new stream.Writable());
@@ -34,6 +34,12 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 			console.info("Load Finished.");
 		}).catch(console.warn);
 	}//load
+	clt.events = function() {
+		return http.get(`${of}/event?pass=${pass}`, conn => {
+			conn.setKeepAlive(true);
+			conn.on("data", clt.emit);
+		});
+	};
 	return clt = http.get(`${of}/socket?pass=${pass}`, conn => {
 		conn.socket.setKeepAlive(true);
 		clt.connect = conn;
@@ -44,9 +50,11 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 			if (/reload/i.test(chunk)) {
 				fs.emptyDirSync(to);
 				conn.emit("started");
+				clt.emit("started");
 				folder(from, to).then(() => {
 					console.info("Export Finished.");
 					conn.emit("finished");
+					clt.emit("finished");
 				}).catch(err => {
 					console.warn(err);
 					return false;
