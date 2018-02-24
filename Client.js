@@ -1,8 +1,9 @@
 const http = require("http"), fs = require("fs-extra"), url = require("url"), stream = require("stream");
 var client;
-module.exports = client = function client({ of, pass, from, to, silence, ignores } = { of: process.env.of || process.env.app || "http://127.0.0.1:8080", pass: process.env.pass || "herokujspass", from: process.env.from || "./", to: process.env.to || "out/", silence: process.env.silence, ignores: process.env.ignore || process.env.ignores || [ "./out", "./node_modules", "./.heroku" ] }) {
+module.exports = client = function client({ of, pass, from, to, silence, ignores } = { of: process.env.of || process.env.app || process.argv[2] || "http://127.0.0.1:8080", pass: process.env.pass || "herokujspass", from: process.env.from || "./", to: process.env.to || "out/", silence: process.env.silence, ignores: process.env.ignore || process.env.ignores || [ "./out", "./node_modules", "./.heroku" ] }) {
 	var clt, console = global.console;
 	//localize console
+	of = of.replace(/^https/gmi, "http")
 	if (silence) console = new console.constructor(new stream.Writable(), new stream.Writable());
 	//redirect local console to null stream, silencing
 	var load = function load(those = to, send = from) {
@@ -28,7 +29,7 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 					post.on("error", rjc);
 					setTimeout(rsl, 300, true);
 					//non-blocking necessity
-				}));
+				}).on("error", console.error));
 			});
 		})).then(() => {
 			console.info("Load Finished.");
@@ -39,6 +40,12 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 		clt.connect = conn;
 		clt.load = conn.load = load;
 		clt.reload = conn.reload = dt => conn.emit("data", dt);
+		clt.connect.send = (event, data) => {
+			conn.write(event + (data ? ":" + data : data));
+			clt.emit("emitted", event + (data ? ":" + data : data));
+			clt.connect.emit("emitted", event + (data ? ":" + data : data));
+			if (clt.event) clt.event.emit("emitted", event + (data ? ":" + data : data));
+		};
 		conn.on("data", chunk => {
 			if (/reload/i.test(chunk)) {
 				fs.emptyDirSync(to);
@@ -61,11 +68,11 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 				clt.connect.emit("load", chunk);
 				if (clt.event) clt.event.emit("load", chunk);
 			}
-		});
+		}).on("error", console.error).on("end", data => clt.connect.emit("closed", data));
 		clt.connect.emit("connected", conn);
 		clt.emit("connected", conn);
 		if (clt.event) clt.event.emit("connected", conn);
-	});
+	}).on("error", console.error);
 	clt.events = function() {
 		var ev = http.request({ host: url.parse(of).hostname, port: url.parse(of).port, path: `/event?pass=${pass}`, method: "POST" }, conn => {
 			conn.socket.setKeepAlive(true);
@@ -87,8 +94,8 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 				if (clt.connect) clt.connect.emit("received", dt);
 				clt.emit("received", dt);
 				clt.event.emit("received", dt);
-			});
-		});
+			}).on("error", console.error).on("end", data => ev.emit("closed", data));
+		}).on("error", console.error);
 		ev.write("listen:true");
 		return ev;
 	};
@@ -112,6 +119,7 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 						rjc("Wrong password.");
 					}
 				});
+				res.on("error", rjc);
 			});
 		});
 	}//folder
@@ -146,6 +154,7 @@ module.exports = client = function client({ of, pass, from, to, silence, ignores
 					}
 				});
 				//no pipes to handle undefined
+				rs.on("error", rjc);
 			});
 		});
 	}//file
